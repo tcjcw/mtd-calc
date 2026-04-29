@@ -75,7 +75,7 @@ input[type=number] {
                   <input type="file" hidden accept=".csv,.xls,.xlsx,.xlsm,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onchange="importRecords(event)">
               </label>
             <button class="btn btn-primary" style="background-color:#4c3470;border-color:#4c3470;" onclick="exportExcel()"><i class="bi bi-file-earmark-excel"></i> Save to Excel</button>
-            <!-- <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#instructionsModal">Instructions</button> -->
+            <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#instructionsModal"><i class="bi bi-question-circle me-1"></i> Instructions</button>
         </li>
     </ul>
 
@@ -443,27 +443,117 @@ input[type=number] {
           </li>
         </ul>
 
-        <div class="tab-content pt-3">
+        <div class="tab-content pt-3" style="max-height:60vh; overflow-y:auto;">
+
+          <!-- DASHBOARD -->
           <div class="tab-pane fade show active" id="instr-dashboard" role="tabpanel" aria-labelledby="instr-dashboard-tab">
-            <h6>Dashboard</h6>
-            <p>Overview of totals and quarterly pivot.</p>
+            <h6 class="fw-bold">Dashboard</h6>
+            <p>The Dashboard gives you an at-a-glance view of your finances for the active tax year.</p>
+
+            <h6 class="fw-semibold mt-3">Summary</h6>
+            <p>The summary section shows your total income, total expenses, and net profit for the year so far. These figures update automatically whenever you add or delete a record.</p>
+
+            <h6 class="fw-semibold mt-3">Quarterly Summary Table</h6>
+            <p>The quarterly breakdown table shows income and expenses split across the four MTD quarters:</p>
+            <ul>
+              <li><strong>Q1</strong> — 6 April to 5 July</li>
+              <li><strong>Q2</strong> — 6 July to 5 October</li>
+              <li><strong>Q3</strong> — 6 October to 5 January</li>
+              <li><strong>Q4</strong> — 6 January to 5 April</li>
+            </ul>
+            <p>Use this table to check your figures before submitting each quarterly update to HMRC.</p>
+
+            <h6 class="fw-semibold mt-3">Tax Year</h6>
+            <p>The active tax year is shown at the top of the page. It is set automatically when you add your first record. All records must fall within the same tax year — the app will warn you if you try to add a record outside it.</p>
+
+            <h6 class="fw-semibold mt-3">Saving &amp; Loading</h6>
+            <p>Your records are saved automatically in your browser. However, <strong>clearing your browser data will erase them</strong>. Use the <strong>Save to Excel</strong> button regularly to download a backup. To restore a previous session, use <strong>Load progress</strong> and select your exported file.</p>
           </div>
 
+          <!-- INCOME -->
           <div class="tab-pane fade" id="instr-income" role="tabpanel" aria-labelledby="instr-income-tab">
-            <h6>Income</h6>
-            <p>
-              Add income records here. Fill date, amount and optional pension fields. 
-              Use "Make recurring" to generate repeated records. 
-              Use the upload button to import files saved from this app.</p>
+            <h6 class="fw-bold">Income</h6>
+            <p>Use this tab to log all income received during the tax year.</p>
+
+            <h6 class="fw-semibold mt-3">Adding a Record</h6>
+            <ol>
+              <li>Enter the <strong>Income Date</strong> — the date the income was received.</li>
+              <li>Enter the <strong>Income Amount</strong> — the gross amount received before any deductions.</li>
+              <li>Optionally enter <strong>Employee Pension (EmpEE)</strong> — your own pension contribution deducted from pay.</li>
+              <li>Optionally enter <strong>Employer Pension (EmpER)</strong> — your employer's pension contribution.</li>
+              <li>Optionally add a <strong>Note</strong> — e.g. the name of your employer or client.</li>
+              <li>Click <strong>Add Income</strong>.</li>
+            </ol>
+
+            <h6 class="fw-semibold mt-3">Recurring Income</h6>
+            <p>If you receive regular income such as a monthly salary, tick <strong>Make recurring</strong> and configure the frequency:</p>
+            <ul>
+              <li>Choose how often — daily, weekday, weekly, monthly, or yearly.</li>
+              <li>For weekly recurrence, select which day of the week.</li>
+              <li>For monthly recurrence, select which day of the month.</li>
+              <li>Set an <strong>end date</strong> — records will be generated from the start date up to and including the end date.</li>
+            </ul>
+            <p>A confirmation will list all dates successfully added once complete.</p>
+
+            <h6 class="fw-semibold mt-3">Filtering Records</h6>
+            <p>Use the <strong>quarter dropdown</strong> in the table header to filter records by MTD quarter. Use the <strong>Notes filter</strong> to search by employer or description. Click <strong>Clear Filters</strong> to reset.</p>
+
+            <h6 class="fw-semibold mt-3">Deleting Records</h6>
+            <p>Click the <strong>delete icon</strong> on any row to remove a single record. Use <strong>Delete All</strong> to clear all income records at once — this cannot be undone.</p>
           </div>
 
+          <!-- EXPENSES -->
           <div class="tab-pane fade" id="instr-expense" role="tabpanel" aria-labelledby="instr-expense-tab">
-            <h6>Expenses</h6>
-            <p>
-              Add expense records with claimable percentage and category according to HMRC.
-              Use "Make recurring" to generate repeated records.  
-              Use the upload button to import files saved from this app.</p>
+            <h6 class="fw-bold">Expenses</h6>
+            <p>Use this tab to log allowable business expenses. Only the claimable portion of each expense is counted towards your totals.</p>
+
+            <h6 class="fw-semibold mt-3">Adding a Record</h6>
+            <ol>
+              <li>Select an <strong>Expense Category</strong> that matches the HMRC category for the expense.</li>
+              <li>Enter the <strong>Expense Date</strong>.</li>
+              <li>Enter the <strong>Total Amount</strong> — the full cost before any percentage reduction.</li>
+              <li>Enter the <strong>Claimable Percentage</strong> — defaults to 100%. Reduce this if the expense is only partly for business use (e.g. 50% for a phone used personally and professionally).</li>
+              <li>Optionally add a <strong>Note</strong> to describe the expense.</li>
+              <li>Click <strong>Add Expense</strong>.</li>
+            </ol>
+
+            <h6 class="fw-semibold mt-3">Mileage (Car Travel)</h6>
+            <p>Selecting <strong>Car Travel</strong> switches the form to mileage mode:</p>
+            <ul>
+              <li>Enter the <strong>miles driven</strong> for the journey.</li>
+              <li>Enter the <strong>number of passengers</strong> (including yourself).</li>
+              <li>The claimable amount is calculated automatically using the HMRC approved mileage rate.</li>
+            </ul>
+
+            <h6 class="fw-semibold mt-3">Expense Categories</h6>
+            <table class="table table-sm table-bordered mt-1">
+              <thead class="table-light"><tr><th>Category</th><th>Examples</th></tr></thead>
+              <tbody>
+                <tr><td>Car Travel</td><td>Business mileage at HMRC approved rate</td></tr>
+                <tr><td>Non-Car Travel</td><td>Trains, buses, taxis, flights</td></tr>
+                <tr><td>Prof. Fees</td><td>Accountancy, legal fees, professional subscriptions</td></tr>
+                <tr><td>Office</td><td>Stationery, phone, computer equipment</td></tr>
+                <tr><td>Rent/Bills</td><td>Business premises, utilities, home office proportion</td></tr>
+                <tr><td>Banking</td><td>Bank charges, loan interest</td></tr>
+                <tr><td>Repairs</td><td>Maintenance of business assets</td></tr>
+                <tr><td>Goods Sold</td><td>Cost of stock or materials used</td></tr>
+                <tr><td>Staffing</td><td>Wages, subcontractor costs</td></tr>
+                <tr><td>Advertising</td><td>Marketing, website, promotion</td></tr>
+                <tr><td>Insurance</td><td>Business insurance premiums</td></tr>
+                <tr><td>Other</td><td>Any other allowable expense</td></tr>
+              </tbody>
+            </table>
+
+            <h6 class="fw-semibold mt-3">Recurring Expenses</h6>
+            <p>Works the same as recurring income — tick <strong>Make recurring</strong>, set the frequency and end date, and the app will generate entries for each occurrence.</p>
+
+            <h6 class="fw-semibold mt-3">Filtering Records</h6>
+            <p>Filter the expense table by <strong>quarter</strong>, <strong>category</strong>, or <strong>notes</strong> using the controls in the table header. Click <strong>Clear Filters</strong> to reset all filters.</p>
+
+            <h6 class="fw-semibold mt-3">Deleting Records</h6>
+            <p>Click the <strong>delete icon</strong> on any row to remove a single record. Use <strong>Delete All</strong> to clear all expense records — this cannot be undone.</p>
           </div>
+
         </div>
       </div>
       <div class="modal-footer">
@@ -907,7 +997,7 @@ function addSingleRecord(type, dateOverride) {
   }
 
   if(!r.amount || !r.date) return alert("Enter date and amount");
-
+  
   if (records.length === 0) {
     // No existing records — this is the first record
     if (enteredTaxYear.label !== currentTaxYear.label) {
