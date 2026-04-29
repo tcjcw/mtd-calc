@@ -910,6 +910,7 @@ function importRecords(e){
    renderPivotTable(records);
 
    if(!silent) alert(`${added} new records imported`);
+   updateTaxYearHeader();
  }
 
  // Excel file (xlsx/xls) -> show sheet selector modal
@@ -988,6 +989,7 @@ function importRecords(e){
 
        const sheetWord = checked.length === 1 ? 'sheet' : 'sheets';
        alert(`Imported ${checked.length} ${sheetWord} — ${totalAdded} new record(s) added.`);
+       updateTaxYearHeader();
      };
    };
    reader.readAsArrayBuffer(file);
