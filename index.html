@@ -877,35 +877,6 @@ function addSingleRecord(type, dateOverride) {
   const enteredTaxYear = getTaxYearForDate(enteredDate);
   const currentTaxYear = getCurrentTaxYear();
 
-  if (records.length === 0) {
-    // No existing records — this is the first record
-    if (enteredTaxYear.label !== currentTaxYear.label) {
-      // Date is outside the current tax year — ask the user what to do
-      const changeTaxYear = confirm(
-        `The date entered is in the ${enteredTaxYear.label} tax year, not the current tax year (${currentTaxYear.label}).` +
-        `\n\nPress OK to switch to the ${enteredTaxYear.label} tax year and add this record, or Cancel to abort.`
-      );
-      if (!changeTaxYear) return false;
-      activeTaxYear = enteredTaxYear;
-      updateTaxYearHeader();
-    } else {
-      // Date is in the current tax year — set it as active
-      activeTaxYear = currentTaxYear;
-      updateTaxYearHeader();
-    }
-  } else {
-    // Existing records — enforce the active tax year
-    if (!activeTaxYear) activeTaxYear = getCurrentTaxYear();
-
-    if (enteredDate < activeTaxYear.start || enteredDate > activeTaxYear.end) {
-      alert(
-        `Existing records are for the ${activeTaxYear.label} tax year.\n\n` +
-        `Please enter a date between 6 April ${activeTaxYear.start.getFullYear()} and 5 April ${activeTaxYear.end.getFullYear()}.`
-      );
-      return false;
-    }
-  }
-
   const r = {
     id:makeID(),
     type: type,
@@ -935,11 +906,39 @@ function addSingleRecord(type, dateOverride) {
     }
   }
 
- if(!r.amount || !r.date) return alert("Enter date and amount");
+  if(!r.amount || !r.date) return alert("Enter date and amount");
+  if (records.length === 0) {
+    // No existing records — this is the first record
+    if (enteredTaxYear.label !== currentTaxYear.label) {
+      // Date is outside the current tax year — ask the user what to do
+      const changeTaxYear = confirm(
+        `The date entered is in the ${enteredTaxYear.label} tax year, not the current tax year (${currentTaxYear.label}).` +
+        `\n\nPress OK to switch to the ${enteredTaxYear.label} tax year and add this record, or Cancel to abort.`
+      );
+      if (!changeTaxYear) return false;
+      activeTaxYear = enteredTaxYear;
+      updateTaxYearHeader();
+    } else {
+      // Date is in the current tax year — set it as active
+      activeTaxYear = currentTaxYear;
+      updateTaxYearHeader();
+    }
+  } else {
+    // Existing records — enforce the active tax year
+    if (!activeTaxYear) activeTaxYear = getCurrentTaxYear();
 
- records.push(r);
- save();
- return true
+    if (enteredDate < activeTaxYear.start || enteredDate > activeTaxYear.end) {
+      alert(
+        `Existing records are for the ${activeTaxYear.label} tax year.\n\n` +
+        `Please enter a date between 6 April ${activeTaxYear.start.getFullYear()} and 5 April ${activeTaxYear.end.getFullYear()}.`
+      );
+      return false;
+    }
+  }
+
+  records.push(r);
+  save();
+  return true
 }
 
 function deleteRecord(id){
