@@ -50,12 +50,26 @@ input[type=number]::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  height: 60px;
+  width: auto;
+}
 </style>
 </head>
 <body class="bg-light">
 <div class="container py-4">
 
-    <h1 class="mb-4" id="page_title">Making Tax Digital Calculator</h1>
+    <div class="header-container mb-4">
+        <h1 id="page_title">Making Tax Digital Calculator</h1>
+        <img src="STT Logo.png" alt="Logo" class="logo">
+    </div>
 
 <!-- TABS -->
     <ul class="nav nav-tabs mb-3" id="tabs">
@@ -70,6 +84,13 @@ input[type=number] {
         </li>
         <li class="nav-item ms-auto">
             <!-- <button class="btn btn-primary" onclick="exportCSV()"><i class="bi bi-save"></i> Save</button> -->
+             <a class="btn btn-outline-success" href="https://ko-fi.com/stagetaxtools" target="_blank">
+              Tip the team 
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-valentine" viewBox="0 0 16 16">
+                <path d="M8 5.993c1.664-1.711 5.825 1.283 0 5.132-5.825-3.85-1.664-6.843 0-5.132M2.25 4a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .5 0V4.5h1.25a.25.25 0 0 0 0-.5zm10 0a.25.25 0 1 0 0 .5h1.25v1.25a.25.25 0 1 0 .5 0v-1.5a.25.25 0 0 0-.25-.25zM2.5 10.25a.25.25 0 1 0-.5 0v1.5c0 .138.112.25.25.25h1.5a.25.25 0 1 0 0-.5H2.5zm11.5 0a.25.25 0 1 0-.5 0v1.25h-1.25a.25.25 0 1 0 0 .5h1.5a.25.25 0 0 0 .25-.25z"/>
+                <path fill-rule="evenodd" d="M0 2.994v-.06a1 1 0 0 1 .859-.99l13-1.857a1 1 0 0 1 1.141.99V2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zM1 3v10h14V3z"/>
+              </svg>
+              </a>
               <label class="btn btn-outline-purple m-0">
                   <i class="bi bi-upload me-1"></i> Load progress
                   <input type="file" hidden accept=".csv,.xls,.xlsx,.xlsm,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onchange="importRecords(event)">
@@ -812,45 +833,124 @@ function exportExcel(){
     groups[q].push(r);
   });
 
-  // Sort quarter keys chronologically descending (most recent first)
+  // Sort quarter keys chronologically (oldest first — Q1, Q2, Q3, Q4)
   const quarterKeys = Object.keys(groups).sort((a,b)=>{
-    const pa = a.match(/^Q(\d)\s+(\d{4})$/) || [];
-    const pb = b.match(/^Q(\d)\s+(\d{4})$/) || [];
-    const qa = pa[1] ? Number(pa[1]) : 0;
+    const pa = a.match(/^Q(\d)\s+(\d{4})\/(\d{4})$/) || [];
+    const pb = b.match(/^Q(\d)\s+(\d{4})\/(\d{4})$/) || [];
     const ya = pa[2] ? Number(pa[2]) : 0;
-    const qb = pb[1] ? Number(pb[1]) : 0;
+    const qa = pa[1] ? Number(pa[1]) : 0;
     const yb = pb[2] ? Number(pb[2]) : 0;
-    if(ya !== yb) return yb - ya;
-    return qb - qa;
+    const qb = pb[1] ? Number(pb[1]) : 0;
+    if(ya !== yb) return ya - yb;
+    return qa - qb;
   });
 
-  const workbook = XLSX.utils.book_new();
+  // Fetch the SA103 template then build the workbook
+  fetch("MTD_SA103_template.xlsx")
+    .then(res => {
+      if(!res.ok) throw new Error(`Template not found (${res.status}). Make sure MTD_SA103_template.xlsx is in the same folder as index.html.`);
+      return res.arrayBuffer();
+    })
+    .then(templateBuffer => {
 
-  quarterKeys.forEach(q=>{
-    const rows = [["ID","Date","Type","Amount","Notes","EmpEE Pension","EmpER Pension","Percentage","Category"]];
-    // sort records in this quarter by date desc
-    groups[q].sort((a,b)=> new Date(b.date) - new Date(a.date)).forEach(r=>{
-      rows.push([
-        r.id || "",
-        r.date || "",
-        r.type || "",
-        r.amount != null ? r.amount : "",
-        r.notes || "",
-        r.empee != null ? r.empee : 0,
-        r.emper != null ? r.emper : 0,
-        r.percentage != null ? r.percentage : "",
-        r.category || ""
-      ]);
+      const workbook = XLSX.utils.book_new();
+
+      quarterKeys.forEach(q => {
+        const qRecords = groups[q];
+
+        // ── 1. Raw data sheet ────────────────────────────────────────────
+        const rows = [["ID","Date","Type","Amount","Notes","EmpEE Pension","EmpER Pension","Percentage","Category"]];
+        qRecords
+          .slice()
+          .sort((a,b) => new Date(b.date) - new Date(a.date))
+          .forEach(r => {
+            rows.push([
+              r.id       || "",
+              r.date     || "",
+              r.type     || "",
+              r.amount   != null ? r.amount   : "",
+              r.notes    || "",
+              r.empee    != null ? r.empee    : 0,
+              r.emper    != null ? r.emper    : 0,
+              r.percentage != null ? r.percentage : "",
+              r.category || ""
+            ]);
+          });
+
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        const safeName = q.replace(/\//g, "_");
+        const dataSheetName = safeName.length > 31 ? safeName.slice(0,31) : safeName;
+        XLSX.utils.book_append_sheet(workbook, ws, dataSheetName);
+
+        // ── 2. MTD Upload sheet ──────────────────────────────────────────
+        // Load a fresh copy of the template for each quarter
+        const templateWb = XLSX.read(templateBuffer, { type: "array" });
+        const templateWs = templateWb.Sheets[templateWb.SheetNames[0]];
+
+        // ── Helper: sum claimable amounts for matching expense categories ─
+        const expenseSum = (...cats) => {
+          const catSet = new Set(cats.map(c => c.toLowerCase()));
+          return qRecords
+            .filter(r => r.type === "expense" && catSet.has((r.category || "").toLowerCase()))
+            .reduce((acc, r) => {
+              const amount = Number(r.amount) || 0;
+              const pct    = Number(r.percentage != null ? r.percentage : 100);
+              return acc + (amount * pct / 100);
+            }, 0);
+        };
+
+        // ── Income: amount + empee + emper all count as taxable income ───
+        const totalIncome = qRecords
+          .filter(r => r.type === "income")
+          .reduce((acc, r) => {
+            return acc +
+              (Number(r.amount) || 0) +
+              (Number(r.empee)  || 0) +
+              (Number(r.emper)  || 0);
+          }, 0);
+
+        // ── Expense totals by SA103F box ─────────────────────────────────
+        const goodsSold  = expenseSum("goods sold");
+        const staffing   = expenseSum("staffing");
+        const travel     = expenseSum("travel", "car travel", "non-car travel");
+        const rentBills  = expenseSum("rent/bills");
+        const repairs    = expenseSum("repairs");
+        const office     = expenseSum("office");
+        const advertising= expenseSum("advertising");
+        const banking    = expenseSum("banking");
+        const profFees   = expenseSum("prof. fees");
+        const other      = expenseSum("other");
+
+        // ── Write values into template cells (col C = index 2) ───────────
+        // SheetJS cell addresses are 0-indexed: col C = column index 2
+        const setCell = (cellRef, value) => {
+          const rounded = Math.round(value * 100) / 100;
+          templateWs[cellRef] = { t: "n", v: rounded };
+        };
+
+        setCell("C7",  totalIncome);   // Box 15 — turnover
+        setCell("C19", goodsSold);     // Box 17 — cost of goods
+        setCell("C27", staffing);      // Box 19 — wages/staff
+        setCell("C31", travel);        // Box 20 — car, van & travel
+        setCell("C35", rentBills);     // Box 21 — rent, rates, power
+        setCell("C39", repairs);       // Box 22 — repairs & maintenance
+        setCell("C43", office);        // Box 23 — office costs
+        setCell("C47", advertising);   // Box 24.1 — advertising
+        setCell("C55", banking);       // Box 25 — interest & bank charges
+        setCell("C67", profFees);      // Box 28 — professional fees
+        setCell("C75", other);         // Box 30 — other expenses
+
+        // ── Name and append the MTD sheet ────────────────────────────────
+        const mtdSheetName = `MTD Upload ${safeName}`.slice(0, 31);
+        XLSX.utils.book_append_sheet(workbook, templateWs, mtdSheetName);
+      });
+
+      XLSX.writeFile(workbook, "MakingTaxDigitalCalculator.xlsx");
+      unsavedChanges = false;
+    })
+    .catch(err => {
+      alert(`Export failed: ${err.message}`);
     });
-
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-    // sheet name max length 31, truncate if necessary
-    const safeName = q.replace(/\//g, "_");
-    const sheetName = safeName.length > 31 ? safeName.slice(0,31) : safeName;
-    XLSX.utils.book_append_sheet(workbook, ws, sheetName);
-  });
-
-  XLSX.writeFile(workbook, "MakingTaxDigitalCalculator.xlsx");
 }
 
 function importRecords(e){
