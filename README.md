@@ -2,6 +2,8 @@
 
 A lightweight, browser-based tool to help self-employed individuals and sole traders track income and expenses for HMRC's Making Tax Digital (MTD) for Income Tax scheme. No account or installation required — everything runs in your browser and your data stays on your device.
 
+If you would like to say thank you to the team behind these tools, you can [buy us a coffee with ko-fi](https://ko-fi.com/stagetaxtools)
+
 ---
 
 ## Features
